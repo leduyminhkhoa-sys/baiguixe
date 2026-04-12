@@ -1,0 +1,9 @@
+body {
+  background: url("../imgs/movies/1.jpg");
+  margin: 0;
+  padding: 0;
+  background-size: cover; 
+  font-family: Arial, sans-serif;
+  width: 100vw;
+  height: 100vh;
+}
