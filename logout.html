@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parking Manager (Firebase)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css">
+
+  <a href="login.html" class="block w-full text-center bg-green-500 p-2 rounded mb-2">Đăng nhập</a>
+  <a href="register.html" class="block w-full text-center bg-blue-500 p-2 rounded">Đăng ký</a>
+  <header class="bg-gray-800 p-4 flex justify-between">
+  
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+</head>
+<body class="bg-gray-900 text-white font-sans">
+    
+
+    
+        <h1 class="font-bold">🚗QY Quản Lý</h1>
+        <span id="clock"></span>
+    </header>
+    
+    
+    <div class="flex">
+        
+  <aside class="w-60 bg-gray-800 h-screen p-4 space-y-3">
+    <button onclick="show('in')" class="w-full p-3 bg-blue-500 rounded">Xe vào</button>
+    <button onclick="show('out')" class="w-full p-3 bg-red-500 rounded">Xe ra</button>
+    <button onclick="show('manage')" class="w-full p-3 bg-green-500 rounded">Quản lý</button>
+  </aside>
+
+  <main class="flex-1 p-6">
+
+    <section id="in">
+      <input id="plateIn" placeholder="Biển số" class="p-3 text-black" />
+      <button onclick="addVehicle()" class="p-3 bg-blue-500">Thêm</button>
+    </section>
+
+    <section id="out" class="hidden">
+      <input id="plateOut" placeholder="Biển số" class="p-3 text-black" />
+      <button onclick="removeVehicle()" class="p-3 bg-red-500">Xóa</button>
+    </section>
+
+    <section id="manage" class="hidden">
+      <table class="w-full mt-4 text-center">
+        <thead>
+          <tr>
+            <th>Biển số</th>
+            <th>Giờ vào</th>
+          </tr>
+        </thead>
+        <tbody id="table"></tbody>
+      </table>
+    </section>
+
+  </main>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyB8ngAarSLxCqmKsv8MSJZiGtgLdKZs6aU",
+  authDomain: "jsa13-17f19.firebaseapp.com",
+  projectId: "jsa13-17f19",
+  storageBucket: "jsa13-17f19.firebasestorage.app",
+  messagingSenderId: "509501570441",
+  appId: "1:509501570441:web:c81ed5a0003c0a93967558"
+};
+
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  function show(id) {
+    document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+  }
+
+  async function addVehicle() {
+    let plate = document.getElementById('plateIn').value;
+    let time = new Date().toLocaleString();
+
+    await db.collection("vehicles").add({ plate, time });
+    loadData();
+  }
+
+  async function removeVehicle() {
+  let plate = document.getElementById('plateOut').value.trim();
+
+  if (!plate) return alert("Nhập biển số");
+
+  let snapshot = await db.collection("vehicles").get();
+
+  let found = false;
+
+  snapshot.forEach(doc => {
+    let data = doc.data();
+
+    if (data.plate.trim().toLowerCase() === plate.toLowerCase()) {
+      db.collection("vehicles").doc(doc.id).delete();
+      found = true;
+    }
+  });
+
+  if (!found) {
+    alert("Không tìm thấy xe!");
+  }
+
+  loadData();
+  document.getElementById('plateOut').value = '';
+}
+
+  async function loadData() {
+    let table = document.getElementById('table');
+    table.innerHTML = '';
+
+    let snapshot = await db.collection("vehicles").get();
+    snapshot.forEach(doc => {
+      let v = doc.data();
+      table.innerHTML += `<tr><td>${v.plate}</td><td>${v.time}</td></tr>`;
+    });
+  }
+
+  loadData();
+
+  setInterval(() => {
+    document.getElementById('clock').innerText = new Date().toLocaleString();
+  }, 1000);
+</script>
+
+</body>
+</html>
