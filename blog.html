@@ -2,132 +2,364 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Parking Manager (Firebase)</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QY Quản Lý Xe</title>
 
-  <a href="logout.html" class="block w-full text-center bg-green-500 p-2 rounded mb-2">Đăng xuất</a>
-  
-  <header class="bg-gray-800 p-4 flex justify-between">
-  
+  <script src="https://cdn.tailwindcss.com"></script>
+
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
-<body class="bg-gray-900 text-white font-sans">
-    
 
-    
-        <h1 class="font-bold">🚗QY Quản Lý</h1>
-        <span id="clock"></span>
-    </header>
-    
-    
-    <div class="flex">
-        
-  <aside class="w-60 bg-gray-800 h-screen p-4 space-y-3">
-    <button onclick="show('in')" class="w-full p-3 bg-blue-500 rounded">Xe vào</button>
-    <button onclick="show('out')" class="w-full p-3 bg-red-500 rounded">Xe ra</button>
-    <button onclick="show('manage')" class="w-full p-3 bg-green-500 rounded">Quản lý</button>
-  </aside>
+<body class="bg-[#1f2937] text-white overflow-hidden">
 
-  <main class="flex-1 p-6">
+  <!-- NAVBAR -->
+  <header class="w-full bg-[#2b3445] h-16 flex items-center justify-between px-6 border-b border-gray-700">
 
-    <section id="in">
-      <input id="plateIn" placeholder="Biển số" class="p-3 text-black" />
-      <button onclick="addVehicle()" class="p-3 bg-blue-500">Thêm</button>
-    </section>
+    <div class="flex items-center gap-2 font-bold text-lg">
+      🚗 QY Quản Lý
+    </div>
 
-    <section id="out" class="hidden">
-      <input id="plateOut" placeholder="Biển số" class="p-3 text-black" />
-      <button onclick="removeVehicle()" class="p-3 bg-red-500">Xóa</button>
-    </section>
+      <a href="logout.html"
+        class="bg-blue-500 hover:bg-blue-600 px-8 py-2 rounded font-semibold transition">
+        Đăng xuất
+      </a>
 
-    <section id="manage" class="hidden">
-      <table class="w-full mt-4 text-center">
-        <thead>
-          <tr>
-            <th>Biển số</th>
-            <th>Giờ vào</th>
-          </tr>
-        </thead>
-        <tbody id="table"></tbody>
-      </table>
-    </section>
+      <button
+        class="bg-orange-500 hover:bg-orange-600 px-8 py-2 rounded font-semibold transition">
+        Quản lý xe
+      </button>
+    </div>
 
-  </main>
-</div>
+  </header>
+
+  <!-- MAIN -->
+  <div class="flex h-[calc(100vh-64px)]">
+
+    <!-- SIDEBAR -->
+    <aside class="w-56 bg-[#263041] p-4 border-r border-gray-700">
+
+      <div class="space-y-4">
+
+        <button onclick="show('in')"
+          class="w-full bg-blue-500 hover:bg-blue-600 py-3 rounded text-lg font-semibold">
+          Xe vào
+        </button>
+
+        <button onclick="show('out')"
+          class="w-full bg-orange-500 hover:bg-orange-600 py-3 rounded text-lg font-semibold">
+          Xe ra
+        </button>
+
+        <button onclick="show('manage')"
+          class="w-full bg-green-500 hover:bg-green-600 py-3 rounded text-lg font-semibold">
+          Quản lý
+        </button>
+
+      </div>
+
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="flex-1 p-6 overflow-auto">
+
+      <!-- KHUNG 2 CỘT -->
+      <div class="grid grid-cols-2 gap-8 h-full">
+
+        <!-- XE RA -->
+        <div class="border-4 border-orange-500 rounded-lg p-5 bg-[#1d2430] flex flex-col">
+
+          <div class="flex justify-between items-center mb-5">
+            <h2 class="bg-blue-500 px-4 py-1 rounded font-bold">
+              Biển số
+            </h2>
+
+            <h2 class="bg-blue-500 px-4 py-1 rounded font-bold">
+              Giờ ra
+            </h2>
+          </div>
+
+          <!-- SECTION XE RA -->
+          <section id="out" class="flex flex-col gap-4">
+
+            <input
+              id="plateOut"
+              type="text"
+              placeholder="Nhập biển số xe ra..."
+              class="bg-gray-800 border border-gray-600 p-3 rounded outline-none"
+            />
+
+            <button
+              onclick="removeVehicle()"
+              class="bg-orange-500 hover:bg-orange-600 p-3 rounded font-bold">
+              Xác nhận xe ra
+            </button>
+
+            <div class="mt-4 overflow-auto">
+              <table class="w-full text-center border-collapse">
+                <thead>
+                  <tr class="border-b border-gray-700">
+                    <th class="p-3">Biển số</th>
+                    <th class="p-3">Giờ vào</th>
+                  </tr>
+                </thead>
+
+                <tbody id="outTable"></tbody>
+              </table>
+            </div>
+
+          </section>
+
+        </div>
+
+        <!-- XE VÀO -->
+        <div class="border-4 border-orange-500 rounded-lg p-5 bg-[#1d2430] flex flex-col">
+
+          <div class="flex justify-between items-center mb-5">
+            <h2 class="bg-blue-500 px-4 py-1 rounded font-bold">
+              Biển số
+            </h2>
+
+            <h2 class="bg-blue-500 px-4 py-1 rounded font-bold">
+              Giờ vào
+            </h2>
+          </div>
+
+          <!-- SECTION XE VÀO -->
+          <section id="in" class="flex flex-col gap-4">
+
+            <input
+              id="plateIn"
+              type="text"
+              placeholder="Nhập biển số xe vào..."
+              class="bg-gray-800 border border-gray-600 p-3 rounded outline-none"
+            />
+
+            <button
+              onclick="addVehicle()"
+              class="bg-blue-500 hover:bg-blue-600 p-3 rounded font-bold">
+              Xác nhận xe vào
+            </button>
+
+            <div class="mt-4 overflow-auto">
+              <table class="w-full text-center border-collapse">
+
+                <thead>
+                  <tr class="border-b border-gray-700">
+                    <th class="p-3">Biển số</th>
+                    <th class="p-3">Giờ vào</th>
+                  </tr>
+                </thead>
+
+                <tbody id="table"></tbody>
+
+              </table>
+            </div>
+
+          </section>
+
+        </div>
+
+      </div>
+
+      <!-- QUẢN LÝ -->
+      <section id="manage" class="hidden mt-8">
+
+        <div class="bg-[#1d2430] border border-gray-700 rounded-lg p-5">
+
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold">Danh sách xe</h2>
+
+            <div id="clock" class="text-lg text-green-400 font-semibold"></div>
+          </div>
+
+          <table class="w-full text-center">
+
+            <thead class="bg-gray-800">
+              <tr>
+                <th class="p-3">Biển số</th>
+                <th class="p-3">Giờ vào</th>
+              </tr>
+            </thead>
+
+            <tbody id="manageTable"></tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyB8ngAarSLxCqmKsv8MSJZiGtgLdKZs6aU",
-  authDomain: "jsa13-17f19.firebaseapp.com",
-  projectId: "jsa13-17f19",
-  storageBucket: "jsa13-17f19.firebasestorage.app",
-  messagingSenderId: "509501570441",
-  appId: "1:509501570441:web:c81ed5a0003c0a93967558"
-};
 
-  const app = firebase.initializeApp(firebaseConfig);
+  const firebaseConfig = {
+    apiKey: "AIzaSyB8ngAarSLxCqmKsv8MSJZiGtgLdKZs6aU",
+    authDomain: "jsa13-17f19.firebaseapp.com",
+    projectId: "jsa13-17f19",
+    storageBucket: "jsa13-17f19.firebasestorage.app",
+    messagingSenderId: "509501570441",
+    appId: "1:509501570441:web:c81ed5a0003c0a93967558"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+
   const db = firebase.firestore();
+  const auth = firebase.auth();
 
-  function show(id) {
-    document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
+  // KIỂM TRA ĐĂNG NHẬP
+  auth.onAuthStateChanged((user) => {
+
+  // CHƯA ĐĂNG NHẬP
+  if (!user) {
+
+    alert("Bạn phải đăng nhập mới được quản lý xe!");
+
+    window.location.href = "login.html";
+
+    return;
   }
 
-  async function addVehicle() {
-    let plate = document.getElementById('plateIn').value;
-    let time = new Date().toLocaleString();
+  // ĐÃ ĐĂNG NHẬP
+  document.getElementById("app").classList.remove("hidden");
 
-    await db.collection("vehicles").add({ plate, time });
+  loadData();
+
+
+  });
+
+  // HIỂN THỊ QUẢN LÝ
+  function show(id) {
+
+    document.getElementById("manage").classList.add("hidden");
+
+    if (id === "manage") {
+      document.getElementById("manage").classList.remove("hidden");
+    }
+
+  }
+
+  // THÊM XE
+  async function addVehicle() {
+
+    let plate = document.getElementById("plateIn").value.trim();
+
+    if (!plate) {
+      alert("Nhập biển số");
+      return;
+    }
+
+    let time = new Date().toLocaleString("vi-VN");
+
+    await db.collection("vehicles").add({
+      plate,
+      time
+    });
+
+    document.getElementById("plateIn").value = "";
+
     loadData();
   }
 
+  // XOÁ XE
   async function removeVehicle() {
-  let plate = document.getElementById('plateOut').value.trim();
 
-  if (!plate) return alert("Nhập biển số");
+    let plate = document.getElementById("plateOut").value.trim();
 
-  let snapshot = await db.collection("vehicles").get();
-
-  let found = false;
-
-  snapshot.forEach(doc => {
-    let data = doc.data();
-
-    if (data.plate.trim().toLowerCase() === plate.toLowerCase()) {
-      db.collection("vehicles").doc(doc.id).delete();
-      found = true;
+    if (!plate) {
+      alert("Nhập biển số");
+      return;
     }
-  });
-
-  if (!found) {
-    alert("Không tìm thấy xe!");
-  }
-
-  loadData();
-  document.getElementById('plateOut').value = '';
-}
-
-  async function loadData() {
-    let table = document.getElementById('table');
-    table.innerHTML = '';
 
     let snapshot = await db.collection("vehicles").get();
+
+    let found = false;
+
     snapshot.forEach(doc => {
-      let v = doc.data();
-      table.innerHTML += `<tr><td>${v.plate}</td><td>${v.time}</td></tr>`;
+
+      let data = doc.data();
+
+      if (data.plate.toLowerCase() === plate.toLowerCase()) {
+
+        db.collection("vehicles").doc(doc.id).delete();
+
+        found = true;
+
+      }
+
     });
+
+    if (!found) {
+      alert("Không tìm thấy xe");
+    }
+
+    document.getElementById("plateOut").value = "";
+
+    loadData();
   }
 
-  loadData();
+  // LOAD DATA
+  async function loadData() {
 
+    const table = document.getElementById("table");
+    const outTable = document.getElementById("outTable");
+    const manageTable = document.getElementById("manageTable");
+
+    table.innerHTML = "";
+    outTable.innerHTML = "";
+    manageTable.innerHTML = "";
+
+    let snapshot = await db.collection("vehicles").get();
+
+    snapshot.forEach(doc => {
+
+      let v = doc.data();
+
+      let row = `
+        <tr class="border-b border-gray-700">
+          <td class="p-3">${v.plate}</td>
+          <td class="p-3">${v.time}</td>
+        </tr>
+      `;
+
+      table.innerHTML += row;
+      outTable.innerHTML += row;
+      manageTable.innerHTML += row;
+
+    });
+
+  }
+
+  // ĐĂNG XUẤT
+  function logout() {
+
+    auth.signOut()
+      .then(() => {
+
+        alert("Đăng xuất thành công");
+
+        window.location.href = "login.html";
+
+      });
+
+  }
+
+  // CLOCK
   setInterval(() => {
-    document.getElementById('clock').innerText = new Date().toLocaleString();
+
+    document.getElementById("clock").innerText =
+      new Date().toLocaleString("vi-VN");
+
   }, 1000);
-</script>
+
+
+  </script>
 
 </body>
 </html>
